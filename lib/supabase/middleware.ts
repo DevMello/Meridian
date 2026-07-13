@@ -1,0 +1,50 @@
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+type CookieToSet = { name: string; value: string; options?: CookieOptions };
+import { isSupabaseConfigured, SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
+
+/** Public routes that never require authentication. */
+const PUBLIC_PREFIXES = ["/sign-in", "/sign-up", "/auth", "/api/mcp", "/api/export", "/api/demo-assets"];
+
+/**
+ * Refreshes the Supabase session cookie and gates protected routes.
+ * When Supabase is not configured, requests pass through untouched so the app
+ * still runs against demo data locally.
+ */
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({ request });
+
+  if (!isSupabaseConfigured()) return response;
+
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet: CookieToSet[]) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options),
+        );
+      },
+    },
+  });
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+  const isPublic = PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+
+  if (!user && !isPublic) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/sign-in";
+    url.searchParams.set("next", path);
+    return NextResponse.redirect(url);
+  }
+
+  return response;
+}
