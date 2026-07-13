@@ -46,7 +46,7 @@ claude mcp add --transport http componenthub http://127.0.0.1:8000/mcp
   "mcpServers": {
     "componenthub": {
       "command": "uv",
-      "args": ["run", "--project", "/path/to/componenthub_mcp", "main.py", "--stdio"]
+      "args": ["run", "--project", "/Users/devmello/Projects/componenthub_mcp", "main.py", "--stdio"]
     }
   }
 }
@@ -80,7 +80,10 @@ for — the needed capability. Unconfigured providers are skipped and reported i
 | `demo` | search, details, pricing, availability, datasheet, cad_models | built-in (sample data) |
 | `digikey` | search, details, pricing, availability, datasheet | `DIGIKEY_CLIENT_ID`, `DIGIKEY_CLIENT_SECRET` |
 | `mouser` | search, details, pricing, availability, datasheet | `MOUSER_API_KEY` |
+| `octopart` | search, details, pricing, availability, datasheet (aggregates many sellers) | `NEXAR_CLIENT_ID`, `NEXAR_CLIENT_SECRET` |
+| `lcsc` | search, details, pricing, availability, cad_models | built-in (via JLCSearch API, no key needed) |
 | `snapmagic` | search, cad_models, datasheet | `SNAPMAGIC_TOKEN` |
+| `ultralibrarian` | search, cad_models, datasheet | `ULTRA_LIBRARIAN_CLIENT_ID`, `ULTRA_LIBRARIAN_CLIENT_SECRET` |
 
 Add a provider: subclass `Provider` in `componenthub_mcp/providers/`, declare its
 capabilities, implement the fetchers it supports, and register it in
@@ -96,12 +99,20 @@ capabilities, implement the fetchers it supports, and register it in
 
 ## Configuration
 
+Copy `.env.example` to `.env` and fill in the credentials you have — it is loaded
+automatically on startup. All variables:
+
 | Env var | Purpose | Default |
 |---|---|---|
 | `COMPONENTHUB_BASE_URL` | Public base URL used in export links | `http://127.0.0.1:8000` |
+| `ENABLED_PROVIDERS` | Allowlist — only these providers are active (comma-separated) | all |
+| `DISABLED_PROVIDERS` | Denylist — these providers are excluded (comma-separated) | none |
 | `DIGIKEY_CLIENT_ID` / `DIGIKEY_CLIENT_SECRET` | DigiKey Product Information API v4 | — |
 | `MOUSER_API_KEY` | Mouser Search API v1 | — |
+| `NEXAR_CLIENT_ID` / `NEXAR_CLIENT_SECRET` | Octopart via Nexar GraphQL API | — |
 | `SNAPMAGIC_TOKEN` | SnapMagic (SnapEDA) API | — |
+| `ULTRA_LIBRARIAN_CLIENT_ID` / `ULTRA_LIBRARIAN_CLIENT_SECRET` | Ultra Librarian partner API | — |
+| `ULTRA_LIBRARIAN_API_BASE` / `ULTRA_LIBRARIAN_TOKEN_URL` | Ultra Librarian endpoint overrides | official endpoints |
 
 ## Layout
 
@@ -115,5 +126,6 @@ componenthub_mcp/
   config.py                    env-based configuration
   providers/
     base.py                    capability-based Provider interface
-    demo.py  digikey.py  mouser.py  snapmagic.py
+    demo.py  digikey.py  mouser.py  octopart.py
+    jlcsearch.py  snapmagic.py  ultralibrarian.py
 ```

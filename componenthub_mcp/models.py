@@ -40,6 +40,9 @@ class Offer(BaseModel):
 
     provider: str
     part_id: str = Field(description="Provider-specific identifier, used for detail lookups")
+    seller: str | None = Field(
+        default=None, description="Set when the provider aggregates other sellers (e.g. Octopart)"
+    )
     product_url: str | None = None
     stock: int | None = None
     price_breaks: list[PriceBreak] = []
