@@ -11,7 +11,7 @@ indexing: every call queries the selected providers live, and normalization happ
 in memory per request.
 
 ```
-Your AI chat (LLM)                      ComponentHub MCP (FastAPI)
+Your AI chat (LLM)                      ComponentHub MCP (Next.js)
 ──────────────────                      ──────────────────────────
 "24V→5V regulator, 3A"  ──────────────▶ search_components
                         ◀────────────── all merged results (unranked)
@@ -33,17 +33,9 @@ npm run dev          # http://localhost:3000
 ```
 
 Opens the Meridian product UI: search, compare, detail pages, projects, and auth.
-The MCP endpoint is built in at `/api/[transport]` — no separate server needed.
-
-### MCP server (Python, for stdio / Claude Desktop)
-
-```sh
-uv sync
-uv run main.py --stdio
-```
-
-Works out of the box with the built-in `demo` provider (clearly-labeled sample
-catalog), so you can try the whole flow without any API keys.
+The MCP endpoint is built in at `/api/[transport]` — no separate server needed. Works
+out of the box with the built-in `demo` provider (clearly-labeled sample catalog), so
+you can try the whole flow without any API keys.
 
 ### Connect from Claude Code (HTTP)
 
@@ -56,14 +48,15 @@ claude mcp add --transport http componenthub http://127.0.0.1:3000/api/mcp \
   --header "Authorization: Bearer <your-api-key>"
 ```
 
-### Connect from Claude Desktop (stdio)
+### Connect from Claude Desktop (JSON config)
 
 ```json
 {
   "mcpServers": {
     "componenthub": {
-      "command": "uv",
-      "args": ["run", "--project", "/PATH/TO/componenthub_mcp", "main.py", "--stdio"]
+      "type": "http",
+      "url": "http://127.0.0.1:3000/api/mcp",
+      "headers": { "Authorization": "Bearer <your-api-key>" }
     }
   }
 }
@@ -115,9 +108,9 @@ for — the needed capability. Unconfigured providers are skipped and reported i
 | `snapmagic` | search, cad_models, datasheet | `SNAPMAGIC_TOKEN` |
 | `ultralibrarian` | search, cad_models, datasheet | `ULTRA_LIBRARIAN_CLIENT_ID`, `ULTRA_LIBRARIAN_CLIENT_SECRET` |
 
-Add a provider: subclass `Provider` in `componenthub_mcp/providers/`, declare its
-capabilities, implement the fetchers it supports, and register it in
-`providers/__init__.py`.
+Add a provider: implement the `Provider` interface in `lib/domain/providers/`, declare
+its capabilities, implement the fetchers it supports, and register it in
+`lib/domain/providers/registry.ts`.
 
 ## Export flow
 
@@ -134,7 +127,7 @@ automatically on startup. All variables:
 
 | Env var | Purpose | Default |
 |---|---|---|
-| `COMPONENTHUB_BASE_URL` | Public base URL used in export links | `http://127.0.0.1:8000` |
+| `COMPONENTHUB_BASE_URL` | Public base URL used in export links | `http://127.0.0.1:3000` |
 | `ENABLED_PROVIDERS` | Allowlist — only these providers are active (comma-separated) | all |
 | `DISABLED_PROVIDERS` | Denylist — these providers are excluded (comma-separated) | none |
 | `DIGIKEY_CLIENT_ID` / `DIGIKEY_CLIENT_SECRET` | DigiKey Product Information API v4 | — |
@@ -148,9 +141,8 @@ automatically on startup. All variables:
 
 ### Prerequisites
 
-- **Node.js** >= 18 (for the web app)
+- **Node.js** >= 18
 - **npm** (ships with Node.js)
-- **Python** >= 3.14 + **uv** (optional, for the Python MCP server)
 
 ### Setup
 
@@ -168,14 +160,6 @@ npm run dev        # → http://localhost:3000
 ```
 
 The web app and MCP endpoint both run from the same Next.js server.
-
-### Run the Python MCP server (optional)
-
-```sh
-uv sync            # install Python deps
-uv run main.py     # HTTP on :8000, MCP at /mcp
-uv run main.py --stdio  # stdio mode for Claude Desktop
-```
 
 ### Verify
 
@@ -198,8 +182,6 @@ app/                          Next.js App Router pages & API routes
 └── api/                      REST endpoints (search, part, pricing, etc.)
 components/                   React components by feature
 lib/                          Domain logic, providers, hooks, Supabase client
-main.py                       Python MCP server entry point
-componenthub_mcp/             Python MCP server package
 ```
 
 ### Environment variables
@@ -228,15 +210,16 @@ curl http://localhost:3000/api/mcp -X POST \
 ## Layout
 
 ```
-main.py                        entry point (HTTP or stdio)
-componenthub_mcp/
-  server.py                    FastMCP tools + FastAPI app (MCP mounted at /mcp)
-  coordinator.py               search fan-out, normalization, MPN merge, history
-  export.py                    export pages + zip bundling (browser-facing)
-  models.py                    shared pydantic models
-  config.py                    env-based configuration
+app/api/[transport]/route.ts   MCP tools + auth (mounted at /api/mcp)
+lib/domain/
+  coordinator.ts                search fan-out, normalization, MPN merge, history
+  export.ts                     export pages + zip bundling (browser-facing)
+  models.ts                     shared zod schemas
+  config.ts                     env-based configuration
+  oauth.ts                      OAuth 2.1 helpers (tokens, PKCE, hashing)
   providers/
-    base.py                    capability-based Provider interface
-    demo.py  digikey.py  mouser.py  octopart.py
-    jlcsearch.py  snapmagic.py  ultralibrarian.py
+    base.ts                     capability-based Provider interface
+    registry.ts                 provider registration
+    demo.ts  digikey.ts  mouser.ts  octopart.ts
+    lcsc.ts  snapmagic.ts  ultralibrarian.ts
 ```
