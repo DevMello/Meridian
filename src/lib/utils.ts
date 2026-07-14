@@ -18,3 +18,17 @@ export function formatStock(value: number | null | undefined): string {
   if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return String(value);
 }
+
+/**
+ * Confines a post-auth "next" redirect to a same-origin relative path.
+ * Rejects protocol-relative ("//host"), scheme-qualified ("https://host"),
+ * and userinfo-prefixed ("@host") strings that would otherwise let
+ * `${origin}${next}` resolve to a different host (open redirect).
+ */
+export function safeNextPath(next: string | null | undefined, fallback = "/search"): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
+    return fallback;
+  }
+  if (next.includes("://") || next.includes("@")) return fallback;
+  return next;
+}

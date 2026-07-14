@@ -108,9 +108,9 @@ for — the needed capability. Unconfigured providers are skipped and reported i
 | `snapmagic` | search, cad_models, datasheet | `SNAPMAGIC_TOKEN` |
 | `ultralibrarian` | search, cad_models, datasheet | `ULTRA_LIBRARIAN_CLIENT_ID`, `ULTRA_LIBRARIAN_CLIENT_SECRET` |
 
-Add a provider: implement the `Provider` interface in `lib/domain/providers/`, declare
-its capabilities, implement the fetchers it supports, and register it in
-`lib/domain/providers/registry.ts`.
+Add a provider: implement the `Provider` interface in `src/lib/domain/providers/`,
+declare its capabilities, implement the fetchers it supports, and register it in
+`src/lib/domain/providers/registry.ts`.
 
 ## Export flow
 
@@ -170,18 +170,22 @@ The web app and MCP endpoint both run from the same Next.js server.
 ### Project structure
 
 ```
-app/                          Next.js App Router pages & API routes
-├── (app)/                    Authenticated product pages
-│   ├── search/               Home / search screen
-│   ├── results/              Results with table/cards + filters rail
-│   ├── compare/              Compare screen + docked tray
-│   ├── parts/[provider]/[id] Part detail (7 tabs)
-│   └── projects/             Projects / BOM list
-├── (auth)/                   Auth pages (sign-in, sign-up)
-├── api/[transport]/route.ts  MCP server endpoint (TypeScript)
-└── api/                      REST endpoints (search, part, pricing, etc.)
-components/                   React components by feature
-lib/                          Domain logic, providers, hooks, Supabase client
+src/
+├── app/                        Next.js App Router pages & API routes
+│   ├── (app)/                  Authenticated product pages
+│   │   ├── search/             Home / search screen
+│   │   ├── results/            Results with table/cards + filters rail
+│   │   ├── compare/            Compare screen + docked tray
+│   │   ├── parts/[provider]/[id] Part detail (7 tabs)
+│   │   └── projects/           Projects / BOM list
+│   ├── (auth)/                 Auth pages (sign-in, sign-up)
+│   ├── api/[transport]/route.ts MCP server endpoint (TypeScript)
+│   └── api/                    REST endpoints (search, part, pricing, etc.)
+├── components/                 React components by feature
+├── lib/                        Domain logic, providers, hooks, Supabase client
+└── middleware.ts                Auth session refresh + route gating
+supabase/                        Postgres migrations
+website/                         Static marketing site (not part of the Next.js build)
 ```
 
 ### Environment variables
@@ -210,8 +214,8 @@ curl http://localhost:3000/api/mcp -X POST \
 ## Layout
 
 ```
-app/api/[transport]/route.ts   MCP tools + auth (mounted at /api/mcp)
-lib/domain/
+src/app/api/[transport]/route.ts MCP tools + auth (mounted at /api/mcp)
+src/lib/domain/
   coordinator.ts                search fan-out, normalization, MPN merge, history
   export.ts                     export pages + zip bundling (browser-facing)
   models.ts                     shared zod schemas

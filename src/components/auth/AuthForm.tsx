@@ -7,7 +7,7 @@ import { Button } from "@/components/meridian";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { useToast } from "@/lib/hooks/useToast";
-import { cn } from "@/lib/utils";
+import { cn, safeNextPath } from "@/lib/utils";
 
 type Mode = "in" | "up";
 
@@ -29,7 +29,7 @@ export function AuthForm({ initialMode = "in", next }: AuthFormProps) {
 
   const configured = isSupabaseConfigured();
 
-  const redirect = next || "/search";
+  const redirect = safeNextPath(next);
 
   const validate = useCallback((): string | null => {
     if (mode === "up" && !name.trim()) return "NAME IS REQUIRED";
