@@ -5,7 +5,20 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
 import { isSupabaseConfigured, SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
 
 /** Public routes that never require authentication. */
-const PUBLIC_PREFIXES = ["/sign-in", "/sign-up", "/auth", "/api/mcp", "/api/export", "/api/demo-assets"];
+const PUBLIC_PREFIXES = [
+  "/sign-in",
+  "/sign-up",
+  "/auth",
+  "/api/mcp",
+  "/api/export",
+  "/api/demo-assets",
+  "/.well-known",
+  "/api/oauth",
+  // /oauth/authorize does its own auth check (see app/oauth/authorize/page.tsx)
+  // so it can preserve the full OAuth query string across the sign-in redirect,
+  // which this middleware's generic redirect (pathname only) would drop.
+  "/oauth/authorize",
+];
 
 /**
  * Refreshes the Supabase session cookie and gates protected routes.

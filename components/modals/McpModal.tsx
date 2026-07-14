@@ -40,7 +40,7 @@ export function McpModal() {
   const { toast } = useToast();
   const configured = isSupabaseConfigured();
   const [origin, setOrigin] = useState("");
-  const [tab, setTab] = useState<"cli" | "json">("cli");
+  const [tab, setTab] = useState<"cli" | "json" | "connector">("cli");
   const [signedIn, setSignedIn] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [loadingKey, setLoadingKey] = useState(false);
@@ -231,9 +231,35 @@ export function McpModal() {
           >
             JSON config
           </button>
+          <button
+            className={`segbtn ${tab === "connector" ? "on" : ""}`}
+            style={{ background: "none", padding: "8px 12px" }}
+            onClick={() => setTab("connector")}
+          >
+            Claude.ai / Desktop
+          </button>
         </div>
         <div className="p-4">
-          <div className="code">{tab === "cli" ? cliSnippet : jsonSnippet}</div>
+          {tab === "connector" ? (
+            <div className="text-[12.5px] leading-relaxed text-ink2">
+              <p className="m-0 mb-2">
+                Settings → Connectors → <strong className="text-ink">Add custom connector</strong>:
+              </p>
+              <ol className="m-0 list-decimal space-y-1 pl-5">
+                <li>
+                  Remote MCP server URL: <span className="code px-1.5 py-0.5">{endpoint}</span>
+                </li>
+                <li>Leave the OAuth Client ID/Secret fields blank</li>
+                <li>Click Add, then Connect — you&apos;ll sign in and approve access</li>
+              </ol>
+              <p className="m-0 mt-2">
+                No API key needed here — this path authenticates per-user via OAuth instead of
+                the bearer token used by the CLI/JSON config.
+              </p>
+            </div>
+          ) : (
+            <div className="code">{tab === "cli" ? cliSnippet : jsonSnippet}</div>
+          )}
         </div>
       </div>
 

@@ -69,6 +69,22 @@ claude mcp add --transport http componenthub http://127.0.0.1:3000/api/mcp \
 }
 ```
 
+### Connect via "Add custom connector" (claude.ai / Desktop GUI)
+
+That dialog only supports no-auth or OAuth — not a pasted bearer token — so the web app's
+`/api/mcp` endpoint also runs a small OAuth 2.1 authorization server (with Dynamic Client
+Registration, so there's no manual app-registration step):
+
+1. Settings → Connectors → **Add custom connector**
+2. Remote MCP server URL: `https://<your-deployment>/api/mcp`
+3. Leave the OAuth Client ID/Secret fields blank — Claude registers itself automatically
+4. Add, then Connect — you'll sign in and approve access on a consent screen
+
+This requires the app to be reachable over HTTPS from Claude's servers (a local `npm run dev`
+won't work here — use a deployment or a tunnel). It's a separate auth path from the CLI/JSON
+config above: each Claude user gets a short-lived OAuth token instead of the long-lived static
+API key, but both hit the same `/api/mcp` endpoint and tools.
+
 ## MCP tools
 
 | Tool | What it does |

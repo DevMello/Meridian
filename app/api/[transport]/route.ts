@@ -5,6 +5,7 @@ import { search, history } from "@/lib/domain/coordinator";
 import { searchQuerySchema, Capability, excludeNone } from "@/lib/domain/models";
 import { baseUrl } from "@/lib/domain/config";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
+import { hashToken } from "@/lib/domain/oauth";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -261,9 +262,11 @@ const handler = createMcpHandler(
 );
 
 /**
- * Verifies the `Authorization: Bearer <key>` header against mcp_api_keys.
- * Uses the service-role client since callers here carry no Supabase session
- * — only the per-user key generated from the MCP modal.
+ * Verifies the `Authorization: Bearer <...>` header two ways: the static
+ * per-user key from the MCP modal (mcp_api_keys, for the CLI/JSON-config
+ * path), or a short-lived OAuth access token (mcp_oauth_grants, for the
+ * "Add custom connector" GUI flow — see app/oauth/authorize + app/api/oauth/*).
+ * Uses the service-role client since callers here carry no Supabase session.
  */
 async function verifyToken(_req: Request, bearerToken?: string) {
   if (!bearerToken) return undefined;
@@ -271,7 +274,24 @@ async function verifyToken(_req: Request, bearerToken?: string) {
     console.error("SUPABASE_SERVICE_ROLE_KEY is not set — rejecting all MCP requests.");
     return undefined;
   }
-  const { data } = await createAdminClient()
+  const admin = createAdminClient();
+
+  if (bearerToken.startsWith("mcp_at_")) {
+    // Validity depends only on the access token's own expiry — refreshing
+    // rotates and revokes the *refresh* token on this row (theft detection
+    // for reuse), but a still-live access token issued alongside it must
+    // keep working until it naturally expires, independent of that.
+    const { data } = await admin
+      .from("mcp_oauth_grants")
+      .select("user_id, access_token_expires_at")
+      .eq("access_token_hash", hashToken(bearerToken))
+      .maybeSingle();
+    if (!data) return undefined;
+    if (new Date(data.access_token_expires_at).getTime() < Date.now()) return undefined;
+    return { token: bearerToken, clientId: data.user_id, scopes: [] };
+  }
+
+  const { data } = await admin
     .from("mcp_api_keys")
     .select("user_id")
     .eq("api_key", bearerToken)
@@ -280,6 +300,9 @@ async function verifyToken(_req: Request, bearerToken?: string) {
   return { token: bearerToken, clientId: data.user_id, scopes: [] };
 }
 
-const authedHandler = withMcpAuth(handler, verifyToken, { required: true });
+const authedHandler = withMcpAuth(handler, verifyToken, {
+  required: true,
+  resourceMetadataPath: "/.well-known/oauth-protected-resource",
+});
 
 export { authedHandler as GET, authedHandler as POST, authedHandler as DELETE };
