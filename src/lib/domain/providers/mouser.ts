@@ -71,6 +71,13 @@ export class MouserProvider extends Provider {
       stock: stockMatch ? parseInt(stockMatch[0], 10) : null,
       price_breaks: breaks,
     };
+    const attrs = (p.ProductAttributes as Record<string, unknown>[]) ?? [];
+    const specs: Record<string, string> = {};
+    for (const attr of attrs) {
+      const key = (attr.AttributeName as string) ?? "";
+      const val = (attr.AttributeValue as string) ?? "";
+      specs[key] = val;
+    }
     return {
       mpn: (p.ManufacturerPartNumber as string) ?? "",
       manufacturer: (p.Manufacturer as string) ?? null,
@@ -79,6 +86,7 @@ export class MouserProvider extends Provider {
       datasheet_url: (p.DataSheetUrl as string) || null,
       image_url: (p.ImagePath as string) || null,
       offers: [offer],
+      specifications: Object.keys(specs).length > 0 ? specs : undefined,
     };
   }
 

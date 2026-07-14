@@ -52,19 +52,19 @@ function bestPrice(r: ComponentResult): number | null {
 }
 
 const SPEC_ALIASES: Record<string, string[]> = {
-  VIN: ["Input Voltage", "VIN", "Vin"],
-  EFF: ["Efficiency"],
-  FSW: ["Switching Frequency", "Frequency"],
-  IQ: ["Quiescent Current", "IQ"],
-  CORE: ["Core"],
-  RADIO: ["Wi-Fi", "Radio", "Wireless", "Connectivity"],
-  USB: ["USB"],
-  FLASH: ["Flash", "Flash Memory"],
-  GPIO: ["GPIO"],
-  NOISE: ["Input Noise", "Noise", "Noise Density"],
-  OFFSET: ["Offset", "Offset Voltage", "Vos"],
-  SUPPLY: ["Supply Voltage", "Supply", "Operating Voltage"],
-  GBW: ["GBW", "Gain Bandwidth", "Gain-Bandwidth"],
+  VIN: ["Input Voltage", "Input Voltage (Max)", "Input Voltage Range", "Supply Voltage", "VIN", "Vin"],
+  EFF: ["Efficiency", "Efficiency (%)", "Efficiency (Typ)"],
+  FSW: ["Switching Frequency", "Switching Frequency (Max)", "Frequency", "Frequency (Max)"],
+  IQ: ["Quiescent Current", "Quiescent Current (Max)", "Supply Current", "IQ", "Iq"],
+  CORE: ["Core", "Core Processor", "Core Architecture", "Processor"],
+  RADIO: ["Wi-Fi", "Radio", "Wireless", "Connectivity", "Bluetooth", "Protocol"],
+  USB: ["USB", "USB Interface", "USB Type"],
+  FLASH: ["Flash", "Flash Memory", "Flash Size", "Memory Size", "Program Memory Size"],
+  GPIO: ["GPIO", "Number of GPIO", "I/O Pins", "Digital I/O Pins"],
+  NOISE: ["Input Noise", "Noise", "Noise Density", "Voltage Noise", "Noise (Typ)"],
+  OFFSET: ["Offset", "Offset Voltage", "Offset Voltage (Max)", "Vos", "Input Offset Voltage"],
+  SUPPLY: ["Supply Voltage", "Supply", "Supply Voltage (Max)", "Supply Voltage (Min)", "Operating Voltage", "Supply Range"],
+  GBW: ["GBW", "Gain Bandwidth", "Gain Bandwidth Product", "Bandwidth", "Gain-Bandwidth"],
 };
 
 function specValue(r: ComponentResult, colKey: string): string | null {

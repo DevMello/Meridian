@@ -166,6 +166,12 @@ export class OctopartProvider extends Provider {
         price_breaks: [],
       });
     }
+    const specs: Record<string, string> = {};
+    for (const s of (part.specs as Array<Record<string, unknown>>) || []) {
+      const key = ((s.attribute as Record<string, unknown>) || {}).name as string;
+      const val = (s.displayValue as string) || "";
+      if (key) specs[key] = val;
+    }
     return {
       mpn,
       manufacturer: ((part.manufacturer as Record<string, unknown>) || {}).name as string | null,
@@ -173,6 +179,7 @@ export class OctopartProvider extends Provider {
       category: ((part.category as Record<string, unknown>) || {}).name as string | null,
       datasheet_url: ((part.bestDatasheet as Record<string, unknown>) || {}).url as string | null,
       offers,
+      specifications: Object.keys(specs).length > 0 ? specs : undefined,
     };
   }
 

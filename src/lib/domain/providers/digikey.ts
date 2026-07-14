@@ -101,6 +101,13 @@ export class DigiKeyProvider extends Provider {
       price_breaks: breaks,
       packaging: (packageType?.Name as string) ?? null,
     };
+    const parameters = (p.Parameters as Record<string, unknown>[]) ?? [];
+    const specs: Record<string, string> = {};
+    for (const param of parameters) {
+      const key = (param.ParameterText as string) ?? "";
+      const val = (param.ValueText as string) ?? "";
+      specs[key] = val;
+    }
     return {
       mpn: (p.ManufacturerProductNumber as string) ?? "",
       manufacturer: (manufacturer?.Name as string) ?? null,
@@ -109,6 +116,7 @@ export class DigiKeyProvider extends Provider {
       datasheet_url: (p.DatasheetUrl as string) ?? null,
       image_url: (p.PhotoUrl as string) ?? null,
       offers: [offer],
+      specifications: Object.keys(specs).length > 0 ? specs : undefined,
     };
   }
 
