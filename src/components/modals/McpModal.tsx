@@ -40,7 +40,7 @@ export function McpModal() {
   const { toast } = useToast();
   const configured = isSupabaseConfigured();
   const [origin, setOrigin] = useState("");
-  const [tab, setTab] = useState<"cli" | "json" | "connector">("cli");
+  const [tab, setTab] = useState<"cli" | "json" | "connector">("connector");
   const [signedIn, setSignedIn] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [loadingKey, setLoadingKey] = useState(false);
@@ -160,60 +160,63 @@ export function McpModal() {
         </div>
         <div className="kv mt-3 border-b-0">
           <span className="k">Auth</span>
-          <span className="v">Bearer token, required — see API key below</span>
+          <span className="v">Bearer token, required — get yours under Claude Code or JSON config</span>
         </div>
       </div>
 
-      <div className="panel mb-4 p-4">
-        <div className="lbl mb-2.5">API key</div>
-        {!configured && (
-          <p className="sub m-0">
-            Supabase isn&apos;t configured for this deployment, so API keys are disabled.
-          </p>
-        )}
-        {configured && !signedIn && (
-          <p className="sub m-0">Sign in to generate your API key.</p>
-        )}
-        {configured && signedIn && keyError && (
-          <div className="flex items-center justify-between gap-3">
-            <span className="sub m-0">Couldn&apos;t load your API key.</span>
-            <button className="btn sm" onClick={retryLoadKey}>
-              Retry
-            </button>
-          </div>
-        )}
-        {configured && signedIn && !keyError && (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="code flex-1 truncate px-3.5 py-2.5">
-                {loadingKey ? "Generating…" : displayKey}
-              </span>
-              <button
-                className="btn sm"
-                onClick={() => setRevealed((r) => !r)}
-                disabled={!apiKey}
-              >
-                {revealed ? "Hide" : "Show"}
-              </button>
-              <button className="btn sm" onClick={copyKey} disabled={!apiKey}>
-                Copy
+      {tab !== "connector" && (
+        <div className="panel mb-4 p-4">
+          <div className="lbl mb-2.5">API key</div>
+          {!configured && (
+            <p className="sub m-0">
+              Supabase isn&apos;t configured for this deployment, so API keys are
+              disabled.
+            </p>
+          )}
+          {configured && !signedIn && (
+            <p className="sub m-0">Sign in to generate your API key.</p>
+          )}
+          {configured && signedIn && keyError && (
+            <div className="flex items-center justify-between gap-3">
+              <span className="sub m-0">Couldn&apos;t load your API key.</span>
+              <button className="btn sm" onClick={retryLoadKey}>
+                Retry
               </button>
             </div>
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <span className="sub m-0">
-                Regenerating invalidates the current key immediately.
-              </span>
-              <button
-                className="btn sm"
-                onClick={regenerate}
-                disabled={regenerating || loadingKey || !apiKey}
-              >
-                {regenerating ? "Regenerating…" : "Regenerate"}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+          )}
+          {configured && signedIn && !keyError && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="code flex-1 truncate px-3.5 py-2.5">
+                  {loadingKey ? "Generating…" : displayKey}
+                </span>
+                <button
+                  className="btn sm"
+                  onClick={() => setRevealed((r) => !r)}
+                  disabled={!apiKey}
+                >
+                  {revealed ? "Hide" : "Show"}
+                </button>
+                <button className="btn sm" onClick={copyKey} disabled={!apiKey}>
+                  Copy
+                </button>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="sub m-0">
+                  Regenerating invalidates the current key immediately.
+                </span>
+                <button
+                  className="btn sm"
+                  onClick={regenerate}
+                  disabled={regenerating || loadingKey || !apiKey}
+                >
+                  {regenerating ? "Regenerating…" : "Regenerate"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="panel mb-4">
         <div className="flex gap-0.5 border-b border-line px-4 pt-2.5">
@@ -236,26 +239,81 @@ export function McpModal() {
             style={{ background: "none", padding: "8px 12px" }}
             onClick={() => setTab("connector")}
           >
-            Claude.ai / Desktop
+            Desktop
           </button>
         </div>
         <div className="p-4">
           {tab === "connector" ? (
-            <div className="text-[12.5px] leading-relaxed text-ink2">
-              <p className="m-0 mb-2">
-                Settings → Connectors → <strong className="text-ink">Add custom connector</strong>:
-              </p>
-              <ol className="m-0 list-decimal space-y-1 pl-5">
-                <li>
-                  Remote MCP server URL: <span className="code px-1.5 py-0.5">{endpoint}</span>
-                </li>
-                <li>Leave the OAuth Client ID/Secret fields blank</li>
-                <li>Click Add, then Connect — you&apos;ll sign in and approve access</li>
-              </ol>
-              <p className="m-0 mt-2">
-                No API key needed here — this path authenticates per-user via OAuth instead of
-                the bearer token used by the CLI/JSON config.
-              </p>
+            <div className="flex flex-col gap-3">
+              <div className="border border-line bg-field p-3.5 text-[12.5px] leading-relaxed text-ink2">
+                <p className="m-0 mb-2 font-semibold text-ink">Claude Desktop</p>
+                <p className="m-0 mb-2">
+                  Open Claude → Settings → Developer → Edit Config → Add to{" "}
+                  <span className="code px-1.5 py-0.5">claude_desktop_config.json</span>:
+                </p>
+                <pre className="code whitespace-pre-wrap rounded-sm bg-black/5 p-2.5 text-[11px] leading-relaxed">
+                  {jsonSnippet}
+                </pre>
+              </div>
+
+              <div className="border border-line bg-field p-3.5 text-[12.5px] leading-relaxed text-ink2">
+                <p className="m-0 mb-2 font-semibold text-ink">Claude Web (claude.ai)</p>
+                <p className="m-0 mb-2">
+                  Settings → Connectors →{" "}
+                  <strong className="text-ink">Add custom connector</strong>:
+                </p>
+                <ol className="m-0 list-decimal space-y-1 pl-5">
+                  <li>
+                    Remote MCP server URL:{" "}
+                    <span className="code px-1.5 py-0.5">{endpoint}</span>
+                  </li>
+                  <li>Leave the OAuth Client ID/Secret fields blank</li>
+                  <li>Click Add, then Connect — you&apos;ll sign in and approve access</li>
+                </ol>
+                <p className="m-0 mt-2 text-ink3">
+                  No API key needed — authenticates per-user via OAuth.
+                </p>
+              </div>
+
+              <div className="border border-line bg-field p-3.5 text-[12.5px] leading-relaxed text-ink2">
+                <p className="m-0 mb-2 font-semibold text-ink">ChatGPT Desktop</p>
+                <p className="m-0 mb-2">
+                  Open ChatGPT → Settings → scroll to bottom →{" "}
+                  <strong className="text-ink">Configure MCP servers</strong>:
+                </p>
+                <ul className="m-0 list-disc space-y-1 pl-5">
+                  <li>
+                    Name: <span className="code px-1.5 py-0.5">meridian</span>
+                  </li>
+                  <li>
+                    URL: <span className="code px-1.5 py-0.5">{endpoint}</span>
+                  </li>
+                  <li>
+                    API key:{" "}
+                    <span className="code px-1.5 py-0.5">{apiKey ?? keyPlaceholder}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="border border-line bg-field p-3.5 text-[12.5px] leading-relaxed text-ink2">
+                <p className="m-0 mb-2 font-semibold text-ink">ChatGPT Web (chatgpt.com)</p>
+                <p className="m-0 mb-2">
+                  Profile → Settings (bottom of sidebar) → scroll to bottom →{" "}
+                  <strong className="text-ink">Configure MCP servers</strong>:
+                </p>
+                <ul className="m-0 list-disc space-y-1 pl-5">
+                  <li>
+                    Name: <span className="code px-1.5 py-0.5">meridian</span>
+                  </li>
+                  <li>
+                    URL: <span className="code px-1.5 py-0.5">{endpoint}</span>
+                  </li>
+                  <li>
+                    API key:{" "}
+                    <span className="code px-1.5 py-0.5">{apiKey ?? keyPlaceholder}</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           ) : (
             <div className="code">{tab === "cli" ? cliSnippet : jsonSnippet}</div>
