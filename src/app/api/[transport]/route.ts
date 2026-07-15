@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { z } from "zod";
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import { allProviders, getProvider, ProviderError } from "@/lib/domain/providers/registry";
@@ -7,14 +8,17 @@ import { baseUrl } from "@/lib/domain/config";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { hashToken } from "@/lib/domain/oauth";
 
+const userContext = new AsyncLocalStorage<string | undefined>();
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const INSTRUCTIONS =
   "ComponentHub: live electronic component search across distributor and CAD " +
   "providers. There is no component database — every call queries providers " +
-  "live. Results are returned unranked; you (the assistant) do any comparison " +
-  "or ranking the user wants. Typical flow: search_components → " +
+  "live. Results are ranked by best price then availability; you (the " +
+  "assistant) can do additional comparison or filtering. Typical flow: " +
+  "search_components → " +
   "get_component_details / get_pricing on the user's shortlist → when the user " +
   "picks a part, get_export_link and give them the URL to open in their " +
   "browser, where they choose their PCB tool (KiCad, Altium, EasyEDA, " +
@@ -30,7 +34,7 @@ function err(message: string) {
   return { error: message };
 }
 
-const handler = createMcpHandler(
+const mcpHandler = createMcpHandler(
   (server) => {
     server.registerTool(
       "list_providers",
@@ -62,8 +66,8 @@ const handler = createMcpHandler(
           "Search for electronic components across providers simultaneously.\n\n" +
           "Translate the user's natural-language need into a distributor-style keyword " +
           '(e.g. "24V to 5V 3A buck regulator" → "buck regulator 5V 3A"). Results from ' +
-          "all providers are normalized and merged by manufacturer part number, but NOT " +
-          "ranked or filtered — present, compare, and rank them yourself. Each offer " +
+"all providers are normalized and merged by manufacturer part number and " +
+           "ranked by best price then availability. Each offer " +
           "includes the provider name and part_id to use with the detail tools.\n\n" +
           "Args:\n" +
           "    keyword: Search keywords (part number, category + key specs, etc.).\n" +
@@ -89,6 +93,43 @@ const handler = createMcpHandler(
         in_stock_only,
         max_results_per_provider,
       }) => {
+        const userId = userContext.getStore();
+        let providerNames = providers ?? null;
+
+        if (userId) {
+          try {
+            const admin = createAdminClient();
+            const { data: prefs } = await admin
+              .from("provider_prefs")
+              .select("provider, enabled")
+              .eq("user_id", userId);
+
+            if (prefs && prefs.length > 0) {
+              const enabled = new Set(
+                prefs.filter((p) => p.enabled).map((p) => p.provider),
+              );
+              if (enabled.size === 0) {
+                return textContent({
+                  results: [],
+                  providers_searched: [],
+                  providers_skipped: [
+                    {
+                      provider: "all",
+                      reason: "All providers are disabled in your preferences.",
+                    },
+                  ],
+                  note: "",
+                });
+              }
+              providerNames = providerNames
+                ? providerNames.filter((n) => enabled.has(n))
+                : [...enabled];
+            }
+          } catch (e) {
+            console.error("Failed to read provider prefs:", e);
+          }
+        }
+
         const query = searchQuerySchema.parse({
           keyword,
           manufacturer: manufacturer ?? null,
@@ -96,7 +137,7 @@ const handler = createMcpHandler(
           in_stock_only: in_stock_only ?? false,
           max_results: Math.max(1, Math.min(max_results_per_provider ?? 10, 50)),
         });
-        return textContent(await search(query, providers ?? null));
+        return textContent(await search(query, providerNames));
       },
     );
 
@@ -299,6 +340,9 @@ async function verifyToken(_req: Request, bearerToken?: string) {
   if (!data) return undefined;
   return { token: bearerToken, clientId: data.user_id, scopes: [] };
 }
+
+const handler = (req: Request) =>
+  userContext.run(req.auth?.clientId, () => mcpHandler(req));
 
 const authedHandler = withMcpAuth(handler, verifyToken, {
   required: true,

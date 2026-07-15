@@ -53,6 +53,31 @@ export function resolveProviders(
   return { usable, skipped };
 }
 
+/** Lowest unit price across all offers. */
+function bestPrice(r: ComponentResult): number | null {
+  const prices = r.offers
+    .flatMap((o) => o.price_breaks.map((b) => b.unit_price))
+    .filter((p) => p > 0);
+  return prices.length ? Math.min(...prices) : null;
+}
+
+/** Total stock across all offers. */
+function totalStock(r: ComponentResult): number {
+  return r.offers.reduce((sum, o) => sum + (o.stock ?? 0), 0);
+}
+
+/** Rank merged results — best (lowest) price first, then highest stock. */
+function rankResults(results: ComponentResult[]): ComponentResult[] {
+  return [...results].sort((a, b) => {
+    const aPrice = bestPrice(a);
+    const bPrice = bestPrice(b);
+    if (aPrice !== null && bPrice === null) return -1;
+    if (aPrice === null && bPrice !== null) return 1;
+    if (aPrice !== null && bPrice !== null && aPrice !== bPrice) return aPrice - bPrice;
+    return totalStock(b) - totalStock(a);
+  });
+}
+
 /** Merge results from different providers that refer to the same MPN. */
 function merge(results: ComponentResult[]): ComponentResult[] {
   const merged = new Map<string, ComponentResult>();
@@ -113,6 +138,7 @@ export async function search(
   const batches = await Promise.all(usable.map(runOne));
   const flat = batches.flat();
   const merged = merge(flat);
+  const ranked = rankResults(merged);
 
   historyRing.unshift({
     query: query.keyword,
@@ -123,10 +149,10 @@ export async function search(
   if (historyRing.length > HISTORY_MAX) historyRing.length = HISTORY_MAX;
 
   return {
-    results: merged.map((r) => excludeNone(r)),
+    results: ranked.map((r) => excludeNone(r)),
     providers_searched: usable.map((p) => p.name),
     providers_skipped: errors,
-    note: "Results are unranked and unfiltered — compare and rank them yourself as needed.",
+    note: "Results are ranked by best price then availability.",
   };
 }
 

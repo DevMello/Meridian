@@ -19,6 +19,7 @@ interface RightRailProps {
   filters: FilterState;
   onChange: (f: FilterState) => void;
   providers: ProviderInfo[];
+  providersSearched: string[];
   hiddenCount: number;
   onClearFilters: () => void;
 }
@@ -28,6 +29,7 @@ export function RightRail({
   filters,
   onChange,
   providers,
+  providersSearched,
   hiddenCount,
   onClearFilters,
 }: RightRailProps) {
@@ -44,7 +46,7 @@ export function RightRail({
       .map(([name, count]) => ({ name, count }));
   }, [results]);
 
-  const activeProviders = providers.filter((p) => p.configured);
+  const activeProviders = providers.filter((p) => providersSearched.includes(p.name));
 
   return (
     <div className="flex flex-col gap-3.5 min-w-0">

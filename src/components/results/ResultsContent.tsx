@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api, type SearchResponse, type ProviderInfo } from "@/lib/api-client";
-import { useSearchHistory } from "@/lib/hooks/data";
+import { useSearchHistory, useProviderPrefs } from "@/lib/hooks/data";
 import { useCompare } from "@/lib/hooks/useCompare";
 import { Seg, Lbl } from "@/components/meridian";
 import { cn } from "@/lib/utils";
@@ -72,6 +72,13 @@ export function ResultsContent() {
   const { record } = useSearchHistory();
   const { items: compareItems } = useCompare();
 
+  const { data: prefs = [], isLoading: prefsLoading } = useProviderPrefs();
+  const enabledProviders = useMemo(() => {
+    if (prefs.length === 0) return undefined;
+    const enabled = prefs.filter((p) => p.enabled).map((p) => p.provider);
+    return enabled.length > 0 ? enabled : undefined;
+  }, [prefs]);
+
   const [phase, setPhase] = useState<"parsing" | "results">("parsing");
   const [data, setData] = useState<SearchResponse | null>(null);
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
@@ -92,11 +99,12 @@ export function ResultsContent() {
       router.replace("/search");
       return;
     }
+    if (prefsLoading) return;
     let cancelled = false;
     (async () => {
       try {
         const [searchRes, provRes] = await Promise.all([
-          api.search({ keyword: q }),
+          api.search({ keyword: q, providers: enabledProviders }),
           api.providers().catch(() => ({ providers: [] })),
         ]);
         if (!cancelled) {
@@ -108,7 +116,7 @@ export function ResultsContent() {
       }
     })();
     return () => { cancelled = true; };
-  }, [q, router]);
+  }, [q, router, enabledProviders, prefsLoading]);
 
   const recordedDataRef = useRef<SearchResponse | null>(null);
 
@@ -323,6 +331,7 @@ export function ResultsContent() {
           filters={filters}
           onChange={setFilters}
           providers={providers}
+          providersSearched={data?.providers_searched ?? []}
           hiddenCount={hiddenCount}
           onClearFilters={clearFilters}
         />
