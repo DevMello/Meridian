@@ -7,6 +7,8 @@
  *
  * part_id is the LCSC product code (e.g. C15742).
  */
+import { baseUrl } from "../config";
+import { EASYEDA_VERSION, fetchEasyEda3dUuid, normalizeLcscCode } from "../easyeda";
 import type {
   CadAsset,
   Capability,
@@ -19,7 +21,6 @@ import type {
 import { Provider, ProviderError } from "./base";
 
 const JLCSEARCH_BASE = "https://jlcsearch.tscircuit.com";
-const EASYEDA_VERSION = "6.4.19.5";
 const HEADERS = { "User-Agent": "Mozilla/5.0 (ComponentHub MCP)" };
 
 function toLcscNumber(partId: string): number {
@@ -187,19 +188,42 @@ export class LcscProvider extends Provider {
   }
 
   async fetchModels(partId: string): Promise<CadAsset[]> {
-    return [
+    const code = normalizeLcscCode(toCNumber(toLcscNumber(partId)));
+    const base = baseUrl();
+    const assets: CadAsset[] = [
+      {
+        kind: "symbol",
+        format: "universal",
+        filename: `${code}-symbol.svg`,
+        url: `${base}/api/easyeda/${code}/symbol.svg`,
+      },
+      {
+        kind: "footprint",
+        format: "universal",
+        filename: `${code}-footprint.svg`,
+        url: `${base}/api/easyeda/${code}/footprint.svg`,
+      },
       {
         kind: "library",
         format: "easyeda",
-        filename: `${partId}-easyeda-component.json`,
-        url: `https://easyeda.com/api/products/${partId}/components?version=${EASYEDA_VERSION}`,
-      },
-      {
-        kind: "symbol",
-        format: "easyeda",
-        filename: `${partId}-preview.json`,
-        url: `https://easyeda.com/api/products/${partId}/svgs`,
+        filename: `${code}-easyeda-component.json`,
+        url: `https://easyeda.com/api/products/${code}/components?version=${EASYEDA_VERSION}`,
       },
     ];
+    // The STEP model only exists when the footprint carries a 3D uuid;
+    // best-effort so a hiccup at easyeda.com doesn't drop the SVG assets.
+    try {
+      if (await fetchEasyEda3dUuid(code)) {
+        assets.push({
+          kind: "step",
+          format: "universal",
+          filename: `${code}.step`,
+          url: `${base}/api/easyeda/${code}/model.step`,
+        });
+      }
+    } catch {
+      // Leave the always-available assets in place.
+    }
+    return assets;
   }
 }

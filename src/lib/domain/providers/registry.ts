@@ -6,21 +6,25 @@ import { disabledProviders, enabledProviders } from "../config";
 import { Provider, ProviderError } from "./base";
 import { DemoProvider } from "./demo";
 import { DigiKeyProvider } from "./digikey";
+import { FarnellProvider } from "./farnell";
 import { LcscProvider } from "./lcsc";
 import { MouserProvider } from "./mouser";
 import { OctopartProvider } from "./octopart";
 import { OemsecretsProvider } from "./oemsecrets";
 import { SnapMagicProvider } from "./snapmagic";
+import { TmeProvider } from "./tme";
 import { UltraLibrarianProvider } from "./ultralibrarian";
 
 const ALL_PROVIDERS: Provider[] = [
   new DemoProvider(),
   new DigiKeyProvider(),
+  new FarnellProvider(),
   new MouserProvider(),
   new LcscProvider(),
   new OctopartProvider(),
   new OemsecretsProvider(),
   new SnapMagicProvider(),
+  new TmeProvider(),
   new UltraLibrarianProvider(),
 ];
 

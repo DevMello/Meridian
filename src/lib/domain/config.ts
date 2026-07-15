@@ -55,3 +55,10 @@ export const oemsecretsApiKey = () =>
   process.env.OEMSECRETS_API_KEY || process.env.OEMSECRETS || null;
 export const oemsecretsCountryCode = () => process.env.OEMSECRETS_COUNTRY_CODE || null;
 export const oemsecretsCurrency = () => process.env.OEMSECRETS_CURRENCY || "USD";
+export const farnellApiKey = () => process.env.FARNELL_API_KEY || null;
+/** element14 storefront: www.newark.com (US), uk.farnell.com (UK/EU), … */
+export const farnellStore = () => process.env.FARNELL_STORE || "www.newark.com";
+export const tmeToken = () => process.env.TME_TOKEN || null;
+export const tmeAppSecret = () => process.env.TME_APP_SECRET || null;
+export const tmeCountry = () => process.env.TME_COUNTRY || "US";
+export const tmeCurrency = () => process.env.TME_CURRENCY || "USD";

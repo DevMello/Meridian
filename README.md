@@ -104,7 +104,10 @@ for — the needed capability. Unconfigured providers are skipped and reported i
 | `digikey` | search, details, pricing, availability, datasheet | `DIGIKEY_CLIENT_ID`, `DIGIKEY_CLIENT_SECRET` |
 | `mouser` | search, details, pricing, availability, datasheet | `MOUSER_API_KEY` |
 | `octopart` | search, details, pricing, availability, datasheet (aggregates many sellers) | `NEXAR_CLIENT_ID`, `NEXAR_CLIENT_SECRET` |
-| `lcsc` | search, details, pricing, availability, cad_models | built-in (via JLCSearch API, no key needed) |
+| `farnell` | search, details, pricing, availability, datasheet | `FARNELL_API_KEY` (+ optional `FARNELL_STORE`) |
+| `tme` | search, details, pricing, availability, datasheet | `TME_TOKEN`, `TME_APP_SECRET` |
+| `oemsecrets` | search, details, pricing, availability, datasheet (aggregates many distributors) | `OEMSECRETS_API_KEY` |
+| `lcsc` | search, details, pricing, availability, cad_models (symbol/footprint SVGs + STEP via EasyEDA) | built-in (via JLCSearch API, no key needed) |
 | `snapmagic` | search, cad_models, datasheet | `SNAPMAGIC_TOKEN` |
 | `ultralibrarian` | search, cad_models, datasheet | `ULTRA_LIBRARIAN_CLIENT_ID`, `ULTRA_LIBRARIAN_CLIENT_SECRET` |
 
@@ -133,6 +136,11 @@ automatically on startup. All variables:
 | `DIGIKEY_CLIENT_ID` / `DIGIKEY_CLIENT_SECRET` | DigiKey Product Information API v4 | — |
 | `MOUSER_API_KEY` | Mouser Search API v1 | — |
 | `NEXAR_CLIENT_ID` / `NEXAR_CLIENT_SECRET` | Octopart via Nexar GraphQL API | — |
+| `FARNELL_API_KEY` | Farnell/Newark element14 Product Search API | — |
+| `FARNELL_STORE` | element14 storefront for pricing/stock | `www.newark.com` |
+| `TME_TOKEN` / `TME_APP_SECRET` | TME API v2 (OAuth2 client credentials) | — |
+| `TME_COUNTRY` / `TME_CURRENCY` | TME pricing locale | `US` / `USD` |
+| `OEMSECRETS_API_KEY` | OEMsecrets multi-distributor aggregator | — |
 | `SNAPMAGIC_TOKEN` | SnapMagic (SnapEDA) API | — |
 | `ULTRA_LIBRARIAN_CLIENT_ID` / `ULTRA_LIBRARIAN_CLIENT_SECRET` | Ultra Librarian partner API | — |
 | `ULTRA_LIBRARIAN_API_BASE` / `ULTRA_LIBRARIAN_TOKEN_URL` | Ultra Librarian endpoint overrides | official endpoints |
