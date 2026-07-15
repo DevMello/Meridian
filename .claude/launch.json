@@ -15,6 +15,7 @@
         "NEXT_PUBLIC_SUPABASE_URL=",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY=",
         "COMPONENTHUB_BASE_URL=http://localhost:3100",
+        "ENABLED_PROVIDERS=demo",
         "PORT=3100",
         "npm",
         "run",
