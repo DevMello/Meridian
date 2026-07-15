@@ -125,26 +125,16 @@ export function LandingPage() {
 
   return (
     <div
-      className="mland"
+      className="mland min-h-screen"
       style={{
-        background: "#050506",
+        background: "#0b0d0e",
+        color: "#e4e8ea",
         fontFamily: "var(--font-inter), system-ui, sans-serif",
       }}
     >
-      {/* main container */}
-      <div
-        className="mx-auto"
-        style={{
-          width: "1080px",
-          maxWidth: "100%",
-          background: "#0b0d0e",
-          border: "1px solid #1f2426",
-          color: "#e4e8ea",
-          overflow: "hidden",
-        }}
-      >
-        {/* --- HEADER --- */}
-        <div className="flex items-center justify-between border-b border-[#1f2426] px-10 py-5">
+      {/* --- HEADER --- */}
+      <div className="border-b border-[#1f2426]">
+        <div className="mx-auto flex max-w-[1080px] items-center justify-between px-10 py-5">
           <div className="flex items-center gap-[11px]">
             <div className="flex h-[22px] w-[22px] items-center justify-center border-[1.5px] border-[#3e6ff0]">
               <div className="h-[7px] w-[7px] bg-[#3e6ff0]" />
@@ -180,58 +170,59 @@ export function LandingPage() {
             </a>
           </div>
         </div>
+      </div>
 
-        {/* --- HERO --- */}
-        <div className="relative px-10 pb-24 pt-[104px] text-center">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)",
-              backgroundSize: "30px 30px",
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 60% at 50% 30%,rgba(62,111,240,.14),transparent 70%)",
-            }}
-          />
-          <div className="relative">
-            <div className="mb-[26px] font-mono text-[10px] font-medium uppercase tracking-[.24em] text-[#3e6ff0]">
-              Live parametric part search · over MCP
-            </div>
-            <h1 className="mx-auto m-0 text-[66px] font-extrabold leading-[1.02] tracking-[-.03em]">
-              Every component, in the chat you already work in.
-            </h1>
-            <p className="mx-auto mt-7 max-w-[60ch] text-lg leading-relaxed text-[#96a0a6]">
-              Meridian turns any MCP-speaking assistant — Claude Desktop, Claude
-              Code, Cursor — into a live parametric search across DigiKey,
-              Mouser, Octopart, LCSC and more. No database. No crawling. Every
-              query hits the real distributors, in real time.
-            </p>
-            <div className="mt-10 flex justify-center gap-3">
-              <a
-                href="/search"
-                className="rounded-[2px] bg-[#3e6ff0] px-[26px] py-[14px] font-mono text-xs font-bold uppercase tracking-[.08em] text-white no-underline"
-              >
-                Open Meridian&nbsp;↗
-              </a>
-              <a
-                href="#"
-                className="rounded-[2px] border border-[#2b3234] bg-transparent px-[26px] py-[14px] font-mono text-xs font-medium uppercase tracking-[.08em] text-[#e4e8ea] no-underline"
-              >
-                View on GitHub
-              </a>
-            </div>
+      {/* --- HERO --- */}
+      <div className="relative pb-24 pt-[104px] text-center">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)",
+            backgroundSize: "30px 30px",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 60% at 50% 30%,rgba(62,111,240,.14),transparent 70%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-[1080px] px-10">
+          <div className="mb-[26px] font-mono text-[10px] font-medium uppercase tracking-[.24em] text-[#3e6ff0]">
+            Live parametric part search · over MCP
+          </div>
+          <h1 className="mx-auto m-0 text-[66px] font-extrabold leading-[1.02] tracking-[-.03em]">
+            Every component, in the chat you already work in.
+          </h1>
+          <p className="mx-auto mt-7 max-w-[60ch] text-lg leading-relaxed text-[#96a0a6]">
+            Meridian turns any MCP-speaking assistant — Claude Desktop, Claude
+            Code, Cursor — into a live parametric search across DigiKey,
+            Mouser, Octopart, LCSC and more. No database. No crawling. Every
+            query hits the real distributors, in real time.
+          </p>
+          <div className="mt-10 flex justify-center gap-3">
+            <a
+              href="/search"
+              className="rounded-[2px] bg-[#3e6ff0] px-[26px] py-[14px] font-mono text-xs font-bold uppercase tracking-[.08em] text-white no-underline"
+            >
+              Open Meridian&nbsp;↗
+            </a>
+            <a
+              href="#"
+              className="rounded-[2px] border border-[#2b3234] bg-transparent px-[26px] py-[14px] font-mono text-xs font-medium uppercase tracking-[.08em] text-[#e4e8ea] no-underline"
+            >
+              View on GitHub
+            </a>
           </div>
           <ChatProof />
         </div>
+      </div>
 
-        {/* --- HOW IT THINKS --- */}
-        <div className="border-t border-[#1f2426] px-10 py-24">
-          <div className="mx-auto grid max-w-[900px] grid-cols-[220px_1fr] gap-12">
+      {/* --- HOW IT THINKS --- */}
+      <div className="border-t border-[#1f2426] px-10 py-24">
+        <div className="mx-auto grid max-w-[900px] grid-cols-[220px_1fr] gap-12">
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[.14em] text-[#3e6ff0]">
                 § 01
@@ -287,8 +278,9 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* --- CONNECT IT --- */}
-        <div id="connect" className="border-t border-[#1f2426] px-10 py-24">
+      {/* --- CONNECT IT --- */}
+      <div id="connect" className="border-t border-[#1f2426] py-24">
+        <div className="mx-auto max-w-[1080px] px-10">
           <div className="mb-[52px] text-center">
             <div className="font-mono text-[10px] font-medium uppercase tracking-[.24em] text-[#5c666d]">
               Connect it
@@ -324,12 +316,11 @@ export function LandingPage() {
             {SNIPPETS[tab].content}
           </div>
         </div>
+      </div>
 
-        {/* --- IN PRACTICE --- */}
-        <div
-          id="use-cases"
-          className="border-t border-[#1f2426] bg-[#08090a] px-10 py-24"
-        >
+      {/* --- IN PRACTICE --- */}
+      <div id="use-cases" className="border-t border-[#1f2426] bg-[#08090a] py-24">
+        <div className="mx-auto max-w-[1080px] px-10">
           <div className="mb-[52px] text-center">
             <div className="font-mono text-[10px] font-medium uppercase tracking-[.24em] text-[#5c666d]">
               In practice
@@ -386,9 +377,11 @@ export function LandingPage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* --- PROVIDERS --- */}
-        <div className="border-t border-[#1f2426] px-10 py-24 text-center">
+      {/* --- PROVIDERS --- */}
+      <div className="border-t border-[#1f2426] py-24 text-center">
+        <div className="mx-auto max-w-[1080px] px-10">
           <div className="font-mono text-[10px] font-medium uppercase tracking-[.24em] text-[#5c666d]">
             Sources
           </div>
@@ -426,9 +419,11 @@ export function LandingPage() {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* --- CTA --- */}
-        <div className="grid grid-cols-2 border-t border-[#1f2426]">
+      {/* --- CTA --- */}
+      <div className="border-t border-[#1f2426]">
+        <div className="mx-auto grid max-w-[1080px] grid-cols-2">
           <div className="border-r border-[#1f2426] px-10 py-[88px]">
             <h2 className="m-0 text-[44px] font-extrabold leading-[1.06] tracking-[-.025em]">
               Search parts from the chat you already use.
@@ -452,9 +447,11 @@ export function LandingPage() {
             </a>
           </div>
         </div>
+      </div>
 
-        {/* --- FOOTER --- */}
-        <div className="flex items-center justify-between border-t border-[#1f2426] px-10 py-[22px] font-mono text-[10px] uppercase tracking-[.1em] text-[#5c666d]">
+      {/* --- FOOTER --- */}
+      <div className="border-t border-[#1f2426]">
+        <div className="mx-auto flex max-w-[1080px] items-center justify-between px-10 py-[22px] font-mono text-[10px] uppercase tracking-[.1em] text-[#5c666d]">
           <span>Meridian · ComponentHub MCP</span>
           <span>No database · No crawling · Live only</span>
         </div>
