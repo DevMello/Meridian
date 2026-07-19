@@ -8,6 +8,7 @@
  * lib/data/mcpKeys.ts) sent as `Authorization: Bearer <key>`.
  */
 import { useEffect, useState } from "react";
+import { track } from "@pulse/sdk";
 import { Modal, Tag } from "@/components/meridian";
 import { useModals } from "@/lib/hooks/useModals";
 import { useToast } from "@/lib/hooks/useToast";
@@ -100,14 +101,17 @@ export function McpModal() {
   );
 
   async function copyEndpoint() {
+    track("mcp_endpoint_copied");
     if (await copy(endpoint)) toast("Endpoint copied", "ok");
   }
 
   async function copyKey() {
+    track("mcp_key_copied");
     if (apiKey && (await copy(apiKey))) toast("API key copied", "ok");
   }
 
   async function regenerate() {
+    track("mcp_key_regenerated");
     setRegenerating(true);
     try {
       const key = await regenerateMcpApiKey();

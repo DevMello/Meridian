@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { track } from "@pulse/sdk";
 import { Logo } from "@/components/shell/Logo";
 import { Button } from "@/components/meridian";
 import { createClient } from "@/lib/supabase/client";
@@ -76,6 +77,7 @@ export function AuthForm({ initialMode = "in", next }: AuthFormProps) {
             toast(error.message, "bad");
             return;
           }
+          track("signed_up", { method: "password" });
           router.push("/verify-email");
         } else {
           const { error } = await supabase.auth.signInWithPassword({
@@ -91,6 +93,7 @@ export function AuthForm({ initialMode = "in", next }: AuthFormProps) {
             toast(error.message, "bad");
             return;
           }
+          track("signed_in", { method: "password" });
           router.push(redirect);
         }
       } catch {
@@ -111,6 +114,7 @@ export function AuthForm({ initialMode = "in", next }: AuthFormProps) {
     setLoading(true);
     const supabase = createClient();
     const origin = window.location.origin;
+    track("sign_in_google_clicked");
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -172,6 +176,7 @@ export function AuthForm({ initialMode = "in", next }: AuthFormProps) {
           toast(error.message, "bad");
           return;
         }
+        track("password_reset_requested");
         setForgotSent(true);
       } catch {
         toast("Something went wrong. Please try again.", "bad");

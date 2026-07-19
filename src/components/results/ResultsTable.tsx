@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { track } from "@pulse/sdk";
 import { cn, formatUsd, formatStock } from "@/lib/utils";
 import { useCompare } from "@/lib/hooks/useCompare";
 import type { ComponentResult } from "@/lib/domain/models";
@@ -130,7 +131,10 @@ export function ResultsTable({
                 "trow click g-res cursor-pointer",
                 isBest && "best",
               )}
-              onClick={() => router.push(`/parts/${provider}/${encodeURIComponent(partId)}`)}
+              onClick={() => {
+                track("result_opened", { mpn: r.mpn, provider, layout: "table" });
+                router.push(`/parts/${provider}/${encodeURIComponent(partId)}`);
+              }}
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

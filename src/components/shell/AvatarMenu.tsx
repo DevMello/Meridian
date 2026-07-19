@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { track } from "@pulse/sdk";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { useModals } from "@/lib/hooks/useModals";
@@ -41,6 +42,7 @@ export function AvatarMenu() {
   }, []);
 
   async function signOut() {
+    track("signed_out");
     if (isSupabaseConfigured()) {
       await createClient().auth.signOut();
     }

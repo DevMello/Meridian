@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { track } from "@pulse/sdk";
 import { ComponentViewer } from "./ComponentViewer";
 import { PriceCalculator } from "./PriceCalculator";
 import { api } from "@/lib/api-client";
@@ -104,6 +105,7 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
         description: details.description ?? "",
       }),
     onSuccess: (_data, vars) => {
+      track("bom_line_added", { mpn: details.mpn, provider: activeProvider });
       qc.invalidateQueries({ queryKey: ["bom", vars.projectId] });
       toast("Added to BOM", "ok");
       setBomOpen(false);
@@ -151,14 +153,20 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
   ];
 
   function copyMpn() {
+    track("mpn_copied", { mpn: details.mpn });
     if (navigator.clipboard) navigator.clipboard.writeText(details.mpn);
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   }
 
   function exportCad() {
+    track("cad_exported", { mpn: details.mpn, provider: activeProvider });
     window.open(api.exportLink(activeProvider, details.mpn), "_blank");
     toast("Opening CAD export…", "ok");
+  }
+
+  function trackDatasheet() {
+    track("datasheet_opened", { mpn: details.mpn, provider: activeProvider });
   }
 
   function saveWatch() {
@@ -328,6 +336,7 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
                 href={details.datasheet_url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={trackDatasheet}
               >
                 Datasheet PDF
               </a>
@@ -397,6 +406,7 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
                           href={o.product_url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => track("buy_clicked", { mpn: details.mpn, provider: o.provider })}
                           className={`mono text-[10px] font-semibold no-underline px-2.5 py-[7px] rounded-sm ${
                             i === 0
                               ? "text-onacc bg-acc"
@@ -455,6 +465,7 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
                 href={details.datasheet_url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={trackDatasheet}
                 className="flex items-center gap-3.5 px-[18px] py-[15px] no-underline text-inherit border-b border-line hover:bg-panel2"
               >
                 <span className="mono text-[9px] text-bad border border-[color:var(--badsoft)] px-[7px] py-[5px] rounded-sm">
@@ -479,6 +490,7 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
                 href={a.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => track("cad_asset_opened", { mpn: details.mpn, kind: a.kind, format: a.format })}
                 className="flex items-center gap-3.5 px-[18px] py-[15px] no-underline text-inherit border-t border-line hover:bg-panel2"
               >
                 <span className="mono text-[9px] text-acc border border-[color:var(--accline)] px-[7px] py-[5px] rounded-sm uppercase">
@@ -530,11 +542,13 @@ export function DetailClient({ details, provider, alternatives = [] }: DetailCli
           <div className="border border-line bg-panel rounded-sm overflow-hidden">
             {alternatives.map((alt, i) => {
               const clickable = Boolean(alt.provider && alt.partId);
-              const go = () =>
-                clickable &&
+              const go = () => {
+                if (!clickable) return;
+                track("alternate_opened", { mpn: alt.mpn, from: details.mpn });
                 router.push(
                   `/parts/${alt.provider}/${encodeURIComponent(alt.partId as string)}`,
                 );
+              };
               return (
                 <div
                   key={alt.mpn}

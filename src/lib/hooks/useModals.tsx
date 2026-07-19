@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { track } from "@pulse/sdk";
 
 /** Named modals opened from anywhere (MCP, Sources, Profile, New project, ...). */
 export type ModalName = "mcp" | "sources" | "profile" | "new-project" | (string & {});
@@ -16,7 +17,10 @@ const ModalsContext = createContext<ModalsContextValue | null>(null);
 
 export function ModalsProvider({ children }: { children: React.ReactNode }) {
   const [active, setActive] = useState<ModalName | null>(null);
-  const open = useCallback((name: ModalName) => setActive(name), []);
+  const open = useCallback((name: ModalName) => {
+    track("modal_opened", { modal: name });
+    setActive(name);
+  }, []);
   const close = useCallback(() => setActive(null), []);
   const isOpen = useCallback((name: ModalName) => active === name, [active]);
   const value = useMemo(() => ({ active, open, close, isOpen }), [active, open, close, isOpen]);

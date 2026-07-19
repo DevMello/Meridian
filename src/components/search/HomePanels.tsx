@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { track } from "@pulse/sdk";
 import { useSearchHistory, useSavedParts, useProjects } from "@/lib/hooks/data";
 import { useModals } from "@/lib/hooks/useModals";
 import { Panel, Lbl } from "@/components/meridian";
@@ -40,9 +41,10 @@ export function HomePanels() {
             <button
               key={row.id}
               className="trow click grid w-full grid-cols-[1fr_48px] border-l-0 border-r-0 border-t-0 bg-transparent px-3.5 py-[9px] text-left"
-              onClick={() =>
-                router.push("/results?q=" + encodeURIComponent(row.query))
-              }
+              onClick={() => {
+                track("search_submitted", { query: row.query, source: "history" });
+                router.push("/results?q=" + encodeURIComponent(row.query));
+              }}
             >
               <span className="truncate text-xs">{row.query}</span>
               <span className="mono text-right text-[9.5px] text-ink3">

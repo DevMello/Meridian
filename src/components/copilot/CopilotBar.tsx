@@ -6,6 +6,7 @@
  * compare views.  No LLM; uses rules.ts for canned answers.
  */
 import * as React from "react";
+import { track } from "@pulse/sdk";
 import { Panel, Lbl } from "@/components/meridian";
 import { cn } from "@/lib/utils";
 import { answerFor, PRESETS, PLACEHOLDER, type Surface } from "./rules";
@@ -38,6 +39,7 @@ export function CopilotBar({ surface, data }: CopilotContext) {
     (qText: string) => {
       const trimmed = qText.trim();
       if (!trimmed) return;
+      track("copilot_asked", { surface, question: trimmed });
       const answer = answerFor(trimmed, surface, data);
       setChat((prev) => [...prev, { role: "user", text: trimmed }]);
       setTyping(true);

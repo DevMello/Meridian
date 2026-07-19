@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { track } from "@pulse/sdk";
 import { Button, Modal } from "@/components/meridian";
 import { useModals } from "@/lib/hooks/useModals";
 import { useToast } from "@/lib/hooks/useToast";
@@ -51,6 +52,7 @@ export function ProfileModal() {
   }
 
   async function signOut() {
+    track("signed_out");
     if (configured) await createClient().auth.signOut();
     close();
     router.push("/sign-in");

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { track } from "@pulse/sdk";
 import { api } from "@/lib/api-client";
 import { useModals } from "@/lib/hooks/useModals";
 import { Panel, CornerTicks, BlueprintGrid, Lbl, Button } from "@/components/meridian";
@@ -30,6 +31,7 @@ export function SearchHero() {
   const submit = useCallback(() => {
     const trimmed = query.trim();
     if (!trimmed) return;
+    track("search_submitted", { query: trimmed, source: "hero" });
     router.push("/results?q=" + encodeURIComponent(trimmed));
   }, [query, router]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { track } from "@pulse/sdk";
 
 type Tab = "cli" | "json" | "gui";
 
@@ -118,6 +119,7 @@ export function LandingPage() {
       gui: "https://<deployment>/api/mcp",
     };
     const text = texts[tab];
+    track("landing_snippet_copied", { tab });
     if (navigator.clipboard) navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
@@ -164,6 +166,7 @@ export function LandingPage() {
             </a>
             <a
               href="/search"
+              onClick={() => track("landing_cta_clicked", { cta: "nav_open_app" })}
               className="rounded-[2px] bg-[#3e6ff0] px-[15px] py-[9px] font-mono text-[10px] font-bold uppercase tracking-[.08em] text-white no-underline"
             >
               Open Meridian
@@ -205,12 +208,14 @@ export function LandingPage() {
           <div className="mt-10 flex justify-center gap-3">
             <a
               href="/search"
+              onClick={() => track("landing_cta_clicked", { cta: "hero_open_app" })}
               className="rounded-[2px] bg-[#3e6ff0] px-[26px] py-[14px] font-mono text-xs font-bold uppercase tracking-[.08em] text-white no-underline"
             >
               Open Meridian&nbsp;↗
             </a>
             <a
               href="#"
+              onClick={() => track("landing_cta_clicked", { cta: "hero_github" })}
               className="rounded-[2px] border border-[#2b3234] bg-transparent px-[26px] py-[14px] font-mono text-xs font-medium uppercase tracking-[.08em] text-[#e4e8ea] no-underline"
             >
               View on GitHub
@@ -393,30 +398,42 @@ export function LandingPage() {
             <span className="font-mono text-[#e4e8ea]">.env</span>. Unconfigured
             ones are quietly skipped.
           </p>
-          <div className="mx-auto mt-10 flex max-w-[820px] flex-wrap justify-center gap-[10px]">
-            {[
-              { name: "digikey", active: false },
-              { name: "mouser", active: false },
-              { name: "octopart", active: false },
-              { name: "oemsecrets", active: false },
-              { name: "lcsc · no key", active: true },
-              { name: "snapmagic", active: false },
-              { name: "ultralibrarian", active: false },
-            ].map((p) => (
-              <span
-                key={p.name}
-                className={`inline-flex items-center gap-2 rounded-[2px] px-[15px] py-[9px] font-mono text-xs ${
-                  p.active
-                    ? "border border-[rgba(62,111,240,.55)] bg-[rgba(62,111,240,.12)] text-[#e4e8ea]"
-                    : "border border-[#2b3234] bg-[#101314] text-[#e4e8ea]"
-                }`}
-              >
-                {p.active && (
-                  <span className="inline-block h-[6px] w-[6px] rounded-[1px] bg-[#3ecf8e]" />
-                )}
-                {p.name}
-              </span>
-            ))}
+          <div
+            className="relative mx-auto mt-10 max-w-[820px]"
+            style={{
+              maskImage:
+                "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)",
+            }}
+          >
+            <div className="flex justify-start gap-[10px] overflow-x-auto px-10 pb-2 [scrollbar-width:thin] sm:justify-center">
+              {[
+                { name: "digikey", active: false },
+                { name: "mouser", active: false },
+                { name: "octopart", active: false },
+                { name: "oemsecrets", active: false },
+                { name: "lcsc · no key", active: true },
+                { name: "farnell", active: false },
+                { name: "tme", active: false },
+                { name: "snapmagic", active: false },
+                { name: "ultralibrarian", active: false },
+              ].map((p) => (
+                <span
+                  key={p.name}
+                  className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-[2px] px-[15px] py-[9px] font-mono text-xs ${
+                    p.active
+                      ? "border border-[rgba(62,111,240,.55)] bg-[rgba(62,111,240,.12)] text-[#e4e8ea]"
+                      : "border border-[#2b3234] bg-[#101314] text-[#e4e8ea]"
+                  }`}
+                >
+                  {p.active && (
+                    <span className="inline-block h-[6px] w-[6px] rounded-[1px] bg-[#3ecf8e]" />
+                  )}
+                  {p.name}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -435,12 +452,14 @@ export function LandingPage() {
           <div className="flex flex-col justify-center gap-3 bg-[#08090a] px-10 py-[88px]">
             <a
               href="/search"
+              onClick={() => track("landing_cta_clicked", { cta: "footer_open_app" })}
               className="flex items-center justify-between rounded-[2px] bg-[#3e6ff0] px-[22px] py-4 font-mono text-xs font-bold uppercase tracking-[.08em] text-white no-underline"
             >
               Open Meridian <span>↗</span>
             </a>
             <a
               href="#"
+              onClick={() => track("landing_cta_clicked", { cta: "footer_github" })}
               className="flex items-center justify-between rounded-[2px] border border-[#2b3234] px-[22px] py-4 font-mono text-xs font-medium uppercase tracking-[.08em] text-[#e4e8ea] no-underline"
             >
               View on GitHub <span>↗</span>

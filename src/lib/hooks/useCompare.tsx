@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { track } from "@pulse/sdk";
 
 export interface CompareItem {
   provider: string;
@@ -29,18 +30,27 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
   const toggle = useCallback((item: CompareItem) => {
     setItems((prev) => {
       if (prev.some((i) => i.part_id === item.part_id)) {
+        track("compare_removed", { mpn: item.mpn, provider: item.provider });
         return prev.filter((i) => i.part_id !== item.part_id);
       }
       if (prev.length >= MAX_COMPARE) return prev;
+      track("compare_added", { mpn: item.mpn, provider: item.provider });
       return [...prev, item];
     });
   }, []);
 
   const remove = useCallback((partId: string) => {
-    setItems((prev) => prev.filter((i) => i.part_id !== partId));
+    setItems((prev) => {
+      const item = prev.find((i) => i.part_id === partId);
+      if (item) track("compare_removed", { mpn: item.mpn, provider: item.provider });
+      return prev.filter((i) => i.part_id !== partId);
+    });
   }, []);
 
-  const clear = useCallback(() => setItems([]), []);
+  const clear = useCallback(() => {
+    track("compare_cleared");
+    setItems([]);
+  }, []);
 
   const value = useMemo(
     () => ({ items, has, toggle, remove, clear, full: items.length >= MAX_COMPARE }),

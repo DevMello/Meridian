@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { track } from "@pulse/sdk";
 import { api, type SearchResponse, type ProviderInfo } from "@/lib/api-client";
 import { useSearchHistory, useProviderPrefs } from "@/lib/hooks/data";
 import { useCompare } from "@/lib/hooks/useCompare";
@@ -186,6 +187,7 @@ export function ResultsContent() {
 
   const handleSort = useCallback(
     (key: SortKey) => {
+      track("results_sorted", { key });
       if (sortKey === key) setSortDir((d) => (d === 1 ? -1 : 1));
       else { setSortKey(key); setSortDir(key === "match" ? -1 : 1); }
     },
@@ -283,13 +285,19 @@ export function ResultsContent() {
         <div className="flex-1" />
         <button
           className={cn("segbtn", layout === "table" && "on")}
-          onClick={() => setLayout("table")}
+          onClick={() => {
+            track("results_layout_changed", { layout: "table" });
+            setLayout("table");
+          }}
         >
           Table
         </button>
         <button
           className={cn("segbtn", layout === "cards" && "on")}
-          onClick={() => setLayout("cards")}
+          onClick={() => {
+            track("results_layout_changed", { layout: "cards" });
+            setLayout("cards");
+          }}
         >
           Cards
         </button>

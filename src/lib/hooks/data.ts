@@ -5,6 +5,7 @@
  * consume these so screens never talk to Supabase directly.
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { track } from "@pulse/sdk";
 import { listSavedParts, removeSavedPart, savePart } from "@/lib/data/saved";
 import { listSearchHistory, recordSearch } from "@/lib/data/history";
 import {
@@ -20,11 +21,20 @@ export function useSavedParts() {
   const qc = useQueryClient();
   const query = useQuery({ queryKey: ["saved-parts"], queryFn: () => listSavedParts() });
   const invalidate = () => qc.invalidateQueries({ queryKey: ["saved-parts"] });
-  const save = useMutation({ mutationFn: savePart, onSuccess: invalidate });
+  const save = useMutation({
+    mutationFn: savePart,
+    onSuccess: (_data, vars) => {
+      track("part_saved", { provider: vars.provider });
+      invalidate();
+    },
+  });
   const remove = useMutation({
     mutationFn: ({ provider, partId }: { provider: string; partId: string }) =>
       removeSavedPart(provider, partId),
-    onSuccess: invalidate,
+    onSuccess: (_data, vars) => {
+      track("part_unsaved", { provider: vars.provider });
+      invalidate();
+    },
   });
   return { ...query, save, remove };
 }
@@ -46,13 +56,28 @@ export function useProjects() {
   const qc = useQueryClient();
   const query = useQuery({ queryKey: ["projects"], queryFn: () => listProjects() });
   const invalidate = () => qc.invalidateQueries({ queryKey: ["projects"] });
-  const create = useMutation({ mutationFn: createProject, onSuccess: invalidate });
+  const create = useMutation({
+    mutationFn: createProject,
+    onSuccess: () => {
+      track("project_created");
+      invalidate();
+    },
+  });
   const update = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateProject>[1] }) =>
       updateProject(id, patch),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      track("project_updated");
+      invalidate();
+    },
   });
-  const remove = useMutation({ mutationFn: deleteProject, onSuccess: invalidate });
+  const remove = useMutation({
+    mutationFn: deleteProject,
+    onSuccess: () => {
+      track("project_deleted");
+      invalidate();
+    },
+  });
   return { ...query, create, update, remove };
 }
 
@@ -66,14 +91,26 @@ export function useBom(projectId: string) {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["bom", projectId] });
   const add = useMutation({
     mutationFn: (input: Parameters<typeof addBomLine>[1]) => addBomLine(projectId, input),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      track("bom_line_added");
+      invalidate();
+    },
   });
   const update = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Parameters<typeof updateBomLine>[1] }) =>
       updateBomLine(id, patch),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      track("bom_line_updated");
+      invalidate();
+    },
   });
-  const remove = useMutation({ mutationFn: removeBomLine, onSuccess: invalidate });
+  const remove = useMutation({
+    mutationFn: removeBomLine,
+    onSuccess: () => {
+      track("bom_line_removed");
+      invalidate();
+    },
+  });
   return { ...query, add, update, remove };
 }
 
@@ -83,7 +120,10 @@ export function useProviderPrefs() {
   const set = useMutation({
     mutationFn: ({ provider, enabled }: { provider: string; enabled: boolean }) =>
       setProviderPref(provider, enabled),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["provider-prefs"] }),
+    onSuccess: (_data, vars) => {
+      track("provider_toggled", { provider: vars.provider, enabled: vars.enabled });
+      qc.invalidateQueries({ queryKey: ["provider-prefs"] });
+    },
   });
   return { ...query, set };
 }
